@@ -18,6 +18,21 @@
   boot.loader.grub.device = "/dev/sda";
   boot.loader.grub.useOSProber = true;
 
+
+  # config para remvoer versões antigas automaticamente
+  # também pode rodar os comandos:
+  # `sudo nix profile wipe-history --older-than 7d --profile /nix/var/nix/profiles/system`
+  # `sudo nix-collect-garbage --delete-old`
+  # `nix-collect-garbage --delete-old`
+  # esse ultimo é necessário rodar por user para remover os dados do hommander
+  boot.loader.grub.configurationLimit = 15;
+  nix.gc = {
+  	automatic = true;
+	dates = "weekly";
+	options = "--delete-older-than 1w";
+  };
+  nix.settings.auto-optimise-store = true;
+
   networking.hostName = "lab205-pc"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 

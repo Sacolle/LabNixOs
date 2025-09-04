@@ -97,6 +97,9 @@
     # ethtool
     # pciutils # lspci
     # usbutils # lsusb
+	
+    # PDF visualizer
+    kdePackages.okular
   ];
 
   # basic configuration of git, please change to your own
