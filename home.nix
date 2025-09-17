@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
 
@@ -8,6 +8,7 @@
   home.username = "colle";
   home.homeDirectory = "/home/colle";
 
+  imports = [ inputs.nixvim.homeModules.nixvim ];
   # link the configuration file in current directory to the specified location in home directory
   # home.file.".config/i3/wallpaper.jpg".source = ./wallpaper.jpg;
 
@@ -100,6 +101,9 @@
 	
     # PDF visualizer
     kdePackages.okular
+
+    # obsidian
+	obsidian
   ];
 
   # basic configuration of git, please change to your own
@@ -112,7 +116,7 @@
   programs.kitty = {
   	enable = true;
 	enableGitIntegration = true;
-	themeFile = "ayu_light";
+	themeFile = "ayu_mirage";
   };
 
   # starship - an customizable prompt for any shell
@@ -154,11 +158,88 @@
     shellAliases = {
       k = "kubectl";
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#lab205-pc";
+      caim = "cd ~/ccbn-p2p-im && cargo run";
       # urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
       # urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
     };
   };
 
+# Fucking helix, fui baitado. Só funciona, mas sem os keybinds do VIM,
+# eu preciso dos meus keybinds cara, eu preciso deles
+
+#  programs.helix = {
+#  enable = true;
+#  settings = {
+#    theme = "autumn_night_transparent";
+#    editor = { 
+#    	cursor-shape = {
+#	    normal = "block";
+#	    insert = "bar";
+#	    select = "underline";
+#    	};
+#	line-number = "relative";
+#	lsp.display-messages = true;
+#    };
+#  };
+#  languages.language = [
+#    {
+#      name = "nix";
+#      auto-format = true;
+#      formatter.command = "${pkgs.nixfmt}/bin/nixfmt";
+#    }
+#    {
+#      name = "haskell";
+#      auto-format = false;
+#      #formatter.command = "${pkgs.nixfmt}/bin/nixfmt";
+#    }
+#
+#  ];
+#  themes = {
+#    autumn_night_transparent = {
+#      "inherits" = "autumn_night";
+#      "ui.background" = { };
+#    };
+#  };
+#};
+  programs.nixvim = {
+    enable = true;
+    vimAlias = true;
+    viAlias = true;
+    
+      plugins = {
+         lualine.enable = true;
+          # telescope
+          # harpoon
+          # lsp
+          # oil -> file explorer
+          # treesitter -> sintax highlight and stuff
+          # vimtex?
+          # which-key -> help with keybinds
+          # markdown-preview -> 
+          # lsp-format && lsp
+          # lspsaga?
+          # cmp -> code compleation https://github.com/LudovicDeMatteis/.dotfiles/blob/master/modules/neovim/plugins/cmp.nix
+          # bufferline -> tabs dos arquivos abertos no topo
+          # nvim-tree -> sidebar
+         orgmode.enable = true;
+      };
+
+     opts = {
+       number = true;
+       relativenumber = true;
+       expandtab = true; 
+       tabstop = 4;
+       softtabstop = 4;
+       showtabline = 4;
+       
+       smartindent = true;
+       # Number of spaces to use for each step of (auto)indent
+       shiftwidth = 4;
+       
+       # Highlight the screen line of the cursor
+       cursorline = true;
+     };
+  };
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
   # when a new home Manager release introduces backwards

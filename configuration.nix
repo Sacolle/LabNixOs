@@ -10,6 +10,8 @@
       ./hardware-configuration.nix
     ];
 
+  nixpkgs.config.allowUnfree = true;
+
   # Config necessária para usar Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -80,6 +82,14 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.printing.browsing = true;
+  services.printing.defaultShared = true;
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -119,8 +129,18 @@
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
-    neovim
+    #neovim
+    
+    gcc
+    # haskell related packages
+    # ghc
+    # haskellPackages.cabal-install
+    # haskellPackages.haskell-language-server
+    lsb-release
+
+    nodejs_24
   ];
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
