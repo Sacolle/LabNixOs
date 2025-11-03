@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
     	url = "github:nix-community/home-manager";
-	inputs.nixpkgs.follows = "nixpkgs";
+        inputs.nixpkgs.follows = "nixpkgs";
     };
     rust-overlay = {
         url = "github:oxalica/rust-overlay";
@@ -14,7 +14,7 @@
     nixvim = {
         url = "github:nix-community/nixvim";
         # If using a stable channel you can use `url = "github:nix-community/nixvim/nixos-<version>"`
-                        # inputs.nixpkgs.follows = "nixpkgs";
+        # inputs.nixpkgs.follows = "nixpkgs";
     };
 
   };

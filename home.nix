@@ -38,6 +38,12 @@
     # neofetch
     # nnn # terminal file manager
 
+    # configured vim client
+    lunarvim
+
+    # forget the vim client
+    vscode
+
     # archives
     zip
     xz
@@ -104,6 +110,9 @@
 
     # obsidian
 	obsidian
+
+    zotero
+    libreoffice
   ];
 
   # basic configuration of git, please change to your own
@@ -159,6 +168,7 @@
       k = "kubectl";
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#lab205-pc";
       caim = "cd ~/ccbn-p2p-im && cargo run";
+      pcad = "ssh phbcolle@gppd-hpc.inf.ufrgs.br";
       # urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
       # urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
     };
