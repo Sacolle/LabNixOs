@@ -15,6 +15,15 @@
   # Config necessária para usar Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+# 
+    nix.settings = {
+        substituters = [
+          "https://cuda-maintainers.cachix.org"
+        ];
+        trusted-public-keys = [
+          "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+        ];
+  };
   # Bootloader.
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/sda";
@@ -35,7 +44,7 @@
   };
   nix.settings.auto-optimise-store = true;
 
-  networking.hostName = "lab205-pc"; # Define your hostname.
+  networking.hostName = "pedro-colle"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -76,6 +85,8 @@
     layout = "br";
     variant = "";
   };
+
+  programs.xwayland.enable = true;
 
   # Configure console keymap
   console.keyMap = "br-abnt2";
@@ -131,8 +142,11 @@
     wget
     #neovim
 
-    nodejs_22
-    
+    auto-multiple-choice
+    (texlive.combine {
+      inherit (pkgs.texlive) scheme-full;
+      inherit auto-multiple-choice;
+    })    
   ];
 
 
@@ -147,7 +161,7 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

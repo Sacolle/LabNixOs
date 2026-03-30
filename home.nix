@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ chnfig, pkgs, inputs, ... }:
 
 {
 
@@ -54,9 +54,10 @@
     # ripgrep # recursively searches directories for a regex pattern
     # jq # A lightweight and flexible command-line JSON processor
     # yq-go # yaml processor https://github.com/mikefarah/yq
-    # TODO: alias ls
     eza # A modern replacement for ‘ls’
     fzf # A command-line fuzzy finder
+    trashy # rm with restore
+    bat # cat with syntax higlight
 
     # networking tools
     # mtr # A network diagnostic tool
@@ -113,6 +114,11 @@
 
     zotero
     libreoffice
+    gimp
+    thunderbird
+
+    # for git
+    git-filter-repo
   ];
 
   # basic configuration of git, please change to your own
@@ -126,6 +132,9 @@
   	enable = true;
 	enableGitIntegration = true;
 	themeFile = "ayu_mirage";
+    shellIntegration.enableZshIntegration = true;
+    settings = {
+    };
   };
 
   # starship - an customizable prompt for any shell
@@ -155,6 +164,25 @@
   #   };
   # };
 
+    programs.zsh = {
+        enable = true;
+        enableCompletion = true;
+        autosuggestion.enable = true;
+        syntaxHighlighting.enable = true;
+
+        oh-my-zsh = {
+            enable = true;
+            plugins = [ "git" ];
+            theme = "robbyrussell";
+        };
+
+        shellAliases = {
+              rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#lab205-pc";
+              # pcad = "ssh phbcolle@gppd-hpc.inf.ufrgs.br";
+        };
+        history.size = 10000;
+    };
+
   programs.bash = {
     enable = true;
     enableCompletion = true;
@@ -163,54 +191,28 @@
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
     '';
 
+    # eval "$(ssh-agent -s)"
+    # ssh-add ~/.ssh/pcad_key
+
     # set some aliases, feel free to add more or remove some
     shellAliases = {
-      k = "kubectl";
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#lab205-pc";
-      caim = "cd ~/ccbn-p2p-im && cargo run";
-      pcad = "ssh phbcolle@gppd-hpc.inf.ufrgs.br";
-      # urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
-      # urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
+      # rm = "trash";
+      ls = "eza -l --icons=always --git -h --no-user --no-time";
+      tree = "eza --tree --icons=always";
+      cat = "bat -pp";
     };
   };
 
-# Fucking helix, fui baitado. Só funciona, mas sem os keybinds do VIM,
-# eu preciso dos meus keybinds cara, eu preciso deles
+  programs.ssh = {
+      extraConfig = "
+        Host pcad
+            User phbcolle
+            Hostname gppd-hpc.inf.ufrgs.br
+            IdentityFile ~/.ssh/pcad_key
+      ";
+  };
 
-#  programs.helix = {
-#  enable = true;
-#  settings = {
-#    theme = "autumn_night_transparent";
-#    editor = { 
-#    	cursor-shape = {
-#	    normal = "block";
-#	    insert = "bar";
-#	    select = "underline";
-#    	};
-#	line-number = "relative";
-#	lsp.display-messages = true;
-#    };
-#  };
-#  languages.language = [
-#    {
-#      name = "nix";
-#      auto-format = true;
-#      formatter.command = "${pkgs.nixfmt}/bin/nixfmt";
-#    }
-#    {
-#      name = "haskell";
-#      auto-format = false;
-#      #formatter.command = "${pkgs.nixfmt}/bin/nixfmt";
-#    }
-#
-#  ];
-#  themes = {
-#    autumn_night_transparent = {
-#      "inherits" = "autumn_night";
-#      "ui.background" = { };
-#    };
-#  };
-#};
   programs.nixvim = {
     enable = true;
     vimAlias = true;
@@ -248,7 +250,19 @@
        
        # Highlight the screen line of the cursor
        cursorline = true;
+    
      };
+     globals.mapleader = " ";
+     keymaps = [
+        {
+            action = "<cmd>Explore<CR>";
+            key = "<leader>ls";
+            mode = [ "n" ];
+            options = {
+                silent = true;
+            };
+        }
+     ];
   };
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
