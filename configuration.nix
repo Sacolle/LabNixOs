@@ -140,13 +140,6 @@
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
-    #neovim
-
-    auto-multiple-choice
-    (texlive.combine {
-      inherit (pkgs.texlive) scheme-full;
-      inherit auto-multiple-choice;
-    })    
   ];
 
 
