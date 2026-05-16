@@ -107,7 +107,8 @@
     # usbutils # lsusb
 	
     # PDF visualizer
-    kdePackages.okular
+    sioyek
+    texliveFull
 
     # obsidian
 	obsidian
@@ -119,6 +120,18 @@
 
     # for git
     git-filter-repo
+
+    # language servers for emacs, 
+    # maybe gemini is not telling me a better way because it hates me
+    # specifically
+    clang-tools     # For C/C++ (clangd)
+    nixd            # For Nix
+    rPackages.languageserver # For R
+
+    direnv
+
+    # extra
+    cockatrice
   ];
 
   # basic configuration of git, please change to your own
@@ -134,6 +147,7 @@
 	themeFile = "ayu_mirage";
     shellIntegration.enableZshIntegration = true;
     settings = {
+        font_size = 14.0;
     };
   };
 
@@ -198,7 +212,7 @@
     shellAliases = {
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#lab205-pc";
       # rm = "trash";
-      ls = "eza -l --icons=always --git -h --no-user --no-time";
+      ls = "eza -l --icons=always --git -h --no-user --no-time -g --group-directories-first";
       tree = "eza --tree --icons=always";
       cat = "bat -pp";
     };
@@ -217,10 +231,23 @@
     enable = true;
     vimAlias = true;
     viAlias = true;
+
+    extraPackages = [
+        pkgs.texliveFull
+    ];
     
       plugins = {
          lualine.enable = true;
-          # telescope
+         telescope.enable = true;
+         vimtex = {
+            enable = true;
+            
+            settings = {
+              view_method = "sioyek"; 
+              view_automatic = true;
+              compiler_method = "latexmk";
+            };
+          };
           # harpoon
           # lsp
           # oil -> file explorer
@@ -231,9 +258,17 @@
           # lsp-format && lsp
           # lspsaga?
           # cmp -> code compleation https://github.com/LudovicDeMatteis/.dotfiles/blob/master/modules/neovim/plugins/cmp.nix
-          # bufferline -> tabs dos arquivos abertos no topo
+          bufferline = {
+                enable = true;
+                settings.options = {
+                  numbers = "ordinal";     # Shows ordinal numbers (1, 2, 3...) on the tabs
+                  diagnostics = "nvim_lsp"; # Shows LSP diagnostics in the bufferline
+                  showBufferCloseIcons = true;
+                  showCloseIcon = true;
+              };
+          };
           # nvim-tree -> sidebar
-         orgmode.enable = true;
+         #orgmode.enable = true;
       };
 
      opts = {
@@ -262,8 +297,169 @@
                 silent = true;
             };
         }
+        {
+          mode = "n";
+          key = "<leader><Tab>";
+          action = "<cmd>BufferLineCycleNext<CR>";
+          options = {
+            desc = "Next buffer";
+            silent = true;
+          };
+        }
+        
+        # Move to the previous buffer using <Shift> + <Tab>
+        {
+          mode = "n";
+          key = "<leader><S-Tab>";
+          action = "<cmd>BufferLineCyclePrev<CR>";
+          options = {
+            desc = "Previous buffer";
+            silent = true;
+          };
+        }
+        # Optional: Close the current buffer with <leader>bd
+        {
+          mode = "n";
+          key = "<leader>d<Tab>";
+          action = "<cmd>bdelete<CR>";
+          options = {
+            desc = "Delete buffer";
+            silent = true;
+          };
+        }
      ];
   };
+
+  programs.emacs = {
+	enable = true;
+	package = pkgs.emacs;
+	extraPackages = epkgs: with epkgs; [
+		nix-mode
+        ess   # for R
+        ace-window # for easier jumping in windows 
+        monokai-pro-theme # dark theme for emacs
+        ob-nix
+        vterm # better terminal-emulator
+		evil # vim binds for emacs
+        envrc # to work better with nix
+        telephone-line # line at the bottom
+	];
+
+	extraConfig = ''
+		(setq standard-indent 4)
+		(menu-bar-mode 0)
+		(tool-bar-mode 0)
+		(scroll-bar-mode 0)
+		(global-display-line-numbers-mode)
+		(require 'evil)
+		(evil-mode 1)
+
+        (org-babel-do-load-languages
+            'org-babel-load-languages
+            '(
+                (R . t)
+                (nix . t)
+                (shell . t)
+            )
+        )
+        (setq org-confirm-babel-evaluate nil)
+
+        (use-package ace-window
+            :bind ("M-o" . ace-window)
+            :config
+            (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+        )
+
+        (use-package monokai-pro-theme
+            :ensure t
+            :config
+            (load-theme 'monokai-pro t)
+        )
+
+        (use-package vterm)
+
+        
+        (use-package eglot
+            :ensure nil ; It is built-in
+            :hook (
+                (c-mode . eglot-ensure)
+                (c++-mode . eglot-ensure)
+                (nix-mode . eglot-ensure)
+                (ess-r-mode . eglot-ensure)
+            )
+            :config
+            (add-to-list 'eglot-server-programs
+                '(nix-mode . ("nixd"))
+            )
+        )
+
+        ;; --- Custom Keybindings (Evil Normal State) ---
+        (with-eval-after-load 'evil
+            (evil-define-key 'normal 'global
+                (kbd "SPC <tab>") 'next-buffer
+                (kbd "SPC <backtab>") 'previous-buffer  ; <backtab> is Shift+Tab
+                (kbd "SPC l s") 'find-file
+                (kbd "SPC L S") 'find-file-other-window ; Requires holding Shift for L and S
+            )
+        )
+
+        ;; --- Telephone Line Setup ---
+        (require 'cl-lib)
+
+        ;; Define click maps for the modeline
+        (defvar my-modeline-prev-map
+            (let ((map (make-sparse-keymap)))
+                (define-key map [mode-line mouse-1] 'previous-buffer)
+                map))
+                
+        (defvar my-modeline-next-map
+            (let ((map (make-sparse-keymap)))
+                (define-key map [mode-line mouse-1] 'next-buffer)
+                map))
+
+
+        (telephone-line-defsegment telephone-line-nav-buffer-segment ()
+            (let* ((bufs (cl-remove-if (lambda (b) (string-match-p "^ " (buffer-name b))) (buffer-list)))
+                   (curr (current-buffer))
+                   (idx (cl-position curr bufs))
+                   (prev (if (and idx (> idx 0)) (nth (1- idx) bufs) nil))
+                   (next (if (and idx (< idx (1- (length bufs)))) (nth (1+ idx) bufs) nil)))
+                (concat
+                 (if prev (propertize (concat "« " (buffer-name prev) " ")
+                                      'help-echo "Click: Previous buffer"
+                                      'mouse-face 'mode-line-highlight
+                                      'local-map my-modeline-prev-map)
+                   "")
+                 (propertize (buffer-name curr) 'face 'bold)
+                 (if next (propertize (concat " " (buffer-name next) " »")
+                                      'help-echo "Click: Next buffer"
+                                      'mouse-face 'mode-line-highlight
+                                      'local-map my-modeline-next-map)
+                   ""))))
+
+        ;; Apply Telephone Line configuration
+        (use-package telephone-line
+            :config
+            (setq telephone-line-lhs
+                  '((evil   . (telephone-line-evil-tag-segment))
+                    (accent . (telephone-line-vc-segment
+                               telephone-line-erc-modified-channels-segment
+                               telephone-line-process-segment))
+                    (nil    . (telephone-line-nav-buffer-segment)))) ; Replaced standard buffer segment
+            (setq telephone-line-rhs
+                  '((nil    . (telephone-line-misc-info-segment))
+                    (accent . (telephone-line-major-mode-segment))
+                    (evil   . (telephone-line-airline-position-segment))))
+            (telephone-line-mode 1)
+        )
+
+        (use-package envrc
+          :config
+          (envrc-global-mode 1))
+	'';
+  };
+
+
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
   # when a new home Manager release introduces backwards
