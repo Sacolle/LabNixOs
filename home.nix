@@ -35,12 +35,6 @@
     # here is some command line tools I use frequently
     # feel free to add your own or remove some of them
 
-    # neofetch
-    # nnn # terminal file manager
-
-    # configured vim client
-    lunarvim
-
     # forget the vim client
     vscode
 
@@ -137,8 +131,12 @@
   # basic configuration of git, please change to your own
   programs.git = {
     enable = true;
-    userName = "sacolle";
-    userEmail ="pedro.h.b.colle@gmail.com";
+    settings = {
+        user = {
+            name = "sacolle";
+            email = "pedro.h.b.colle@gmail.com";
+        };
+    };
   };
 
   programs.kitty = {
@@ -237,6 +235,7 @@
     ];
     
       plugins = {
+         web-devicons.enable = true;
          lualine.enable = true;
          telescope.enable = true;
          vimtex = {
@@ -340,9 +339,11 @@
         monokai-pro-theme # dark theme for emacs
         ob-nix
         vterm # better terminal-emulator
+        kkp   # vterm work with kitty
 		evil # vim binds for emacs
         envrc # to work better with nix
         telephone-line # line at the bottom
+        org-ref # for citations in org
 	];
 
 	extraConfig = ''
@@ -351,6 +352,10 @@
 		(tool-bar-mode 0)
 		(scroll-bar-mode 0)
 		(global-display-line-numbers-mode)
+
+    ;; change base choose buffer func
+    (global-set-key (kbd "C-x C-b") 'ibuffer)
+
 		(require 'evil)
 		(evil-mode 1)
 
@@ -378,6 +383,13 @@
 
         (use-package vterm)
 
+        (use-package kkp
+            :ensure t
+            :hook (tty-setup . global-kkp-mode)
+            :config
+            ;; (setq kkp-alt-modifier 'alt) ;; use this if you want to map the Alt keyboard modifier to Alt in Emacs (and not to Meta)
+        )
+
         
         (use-package eglot
             :ensure nil ; It is built-in
@@ -393,6 +405,9 @@
             )
         )
 
+        ;; skip the deafult and interpretation buffers
+        (setq switch-to-prev-buffer-skip-regexp "\\*[^*]+\\*")
+
         ;; --- Custom Keybindings (Evil Normal State) ---
         (with-eval-after-load 'evil
             (evil-define-key 'normal 'global
@@ -403,53 +418,21 @@
             )
         )
 
-        ;; --- Telephone Line Setup ---
-        (require 'cl-lib)
-
-        ;; Define click maps for the modeline
-        (defvar my-modeline-prev-map
-            (let ((map (make-sparse-keymap)))
-                (define-key map [mode-line mouse-1] 'previous-buffer)
-                map))
-                
-        (defvar my-modeline-next-map
-            (let ((map (make-sparse-keymap)))
-                (define-key map [mode-line mouse-1] 'next-buffer)
-                map))
-
-
-        (telephone-line-defsegment telephone-line-nav-buffer-segment ()
-            (let* ((bufs (cl-remove-if (lambda (b) (string-match-p "^ " (buffer-name b))) (buffer-list)))
-                   (curr (current-buffer))
-                   (idx (cl-position curr bufs))
-                   (prev (if (and idx (> idx 0)) (nth (1- idx) bufs) nil))
-                   (next (if (and idx (< idx (1- (length bufs)))) (nth (1+ idx) bufs) nil)))
-                (concat
-                 (if prev (propertize (concat "« " (buffer-name prev) " ")
-                                      'help-echo "Click: Previous buffer"
-                                      'mouse-face 'mode-line-highlight
-                                      'local-map my-modeline-prev-map)
-                   "")
-                 (propertize (buffer-name curr) 'face 'bold)
-                 (if next (propertize (concat " " (buffer-name next) " »")
-                                      'help-echo "Click: Next buffer"
-                                      'mouse-face 'mode-line-highlight
-                                      'local-map my-modeline-next-map)
-                   ""))))
 
         ;; Apply Telephone Line configuration
         (use-package telephone-line
             :config
             (setq telephone-line-lhs
-                  '((evil   . (telephone-line-evil-tag-segment))
-                    (accent . (telephone-line-vc-segment
-                               telephone-line-erc-modified-channels-segment
-                               telephone-line-process-segment))
-                    (nil    . (telephone-line-nav-buffer-segment)))) ; Replaced standard buffer segment
-            (setq telephone-line-rhs
-                  '((nil    . (telephone-line-misc-info-segment))
-                    (accent . (telephone-line-major-mode-segment))
-                    (evil   . (telephone-line-airline-position-segment))))
+            '((evil   . (telephone-line-evil-tag-segment))
+                (accent . (telephone-line-vc-segment
+                        telephone-line-erc-modified-channels-segment
+                        telephone-line-process-segment))
+                (nil    . (telephone-line-minor-mode-segment
+                        telephone-line-buffer-segment))))
+        (setq telephone-line-rhs
+            '((nil    . (telephone-line-misc-info-segment))
+                (accent . (telephone-line-major-mode-segment))
+                (evil   . (telephone-line-airline-position-segment))))
             (telephone-line-mode 1)
         )
 

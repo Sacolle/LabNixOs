@@ -7,10 +7,6 @@
     	url = "github:nix-community/home-manager";
         inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust-overlay = {
-        url = "github:oxalica/rust-overlay";
-        inputs.nixpkgs.follows = "nixpkgs";
-    };
     nixvim = {
         url = "github:nix-community/nixvim";
         # If using a stable channel you can use `url = "github:nix-community/nixvim/nixos-<version>"`
@@ -19,8 +15,7 @@
 
   };
 
-  outputs =
-    { nixpkgs, home-manager, rust-overlay, ... } @ inputs :
+  outputs = { nixpkgs, home-manager, ... } @ inputs :
     {
       nixosConfigurations = {
         lab205-pc = nixpkgs.lib.nixosSystem {
@@ -37,10 +32,6 @@
               # arguments to home.nix
               home-manager.extraSpecialArgs = { inherit inputs; };
             }
-	    ({ pkgs, ... }: {
-		nixpkgs.overlays = [ rust-overlay.overlays.default ];
-		environment.systemPackages = [ pkgs.rust-bin.stable.latest.default ];
-	    })
           ];
         };
       };
