@@ -104,8 +104,10 @@
     sioyek
     texliveFull
 
-    # obsidian
+    # unfree
 	obsidian
+    cudaPackages_13.nsight_compute
+
 
     zotero
     libreoffice
@@ -122,7 +124,17 @@
     nixd            # For Nix
     rPackages.languageserver # For R
 
+    # for emacs renv
     direnv
+
+    # for emacs spell checker jinx
+    hunspell
+    hunspellDicts.en-us 
+    hunspellDicts.pt-br
+
+    # claude
+    # I know there are ways to configure claude code in homander
+    claude-code
 
     # extra
     cockatrice
@@ -344,6 +356,8 @@
         envrc # to work better with nix
         telephone-line # line at the bottom
         org-ref # for citations in org
+        jinx # spell checking
+        pdf-tools # visualize pdf on emacs
 	];
 
 	extraConfig = ''
@@ -439,6 +453,29 @@
         (use-package envrc
           :config
           (envrc-global-mode 1))
+
+        (use-package jinx  
+          :hook (
+            (LaTeX-mode . jinx-mode)  
+            (latex-mode . jinx-mode)  
+            (markdown-mode . jinx-mode)  
+            (org-mode . jinx-mode)  
+            )     
+          :bind (
+            ("M-$" . jinx-correct)
+            ("C-M-$" . jinx-languages)
+            ([remap ispell-word] . jinx-correct)  
+            )
+        )
+
+        (use-package pdf-tools
+          :ensure t
+          :config
+          (pdf-tools-install :no-query)
+          (with-eval-after-load 'org
+            (add-to-list 'org-file-apps '("\\.pdf\\'" . emacs))
+            )
+          )
 	'';
   };
 
